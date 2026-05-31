@@ -1,0 +1,135 @@
+import asyncio
+import logging
+from aiogram import Bot, Dispatcher, types
+from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.storage.memory import MemoryStorage
+
+import asyncio
+import logging
+from aiogram import Bot, Dispatcher, types
+from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.storage.memory import MemoryStorage
+
+API_TOKEN = "8819638324:AAGgf3-DvACTXP46_fQzSQ7eoAaAujHFDgk"
+
+logging.basicConfig(level=logging.INFO)
+bot = Bot(token=API_TOKEN)
+storage = MemoryStorage()
+dp = Dispatcher(storage=storage)
+
+# Состояния для регистрации
+class Reg(StatesGroup):
+    fio = State()
+    doctor = State()
+    date = State()
+    time = State()
+
+@dp.message(Command("start"))
+async def start(message: types.Message, state: FSMContext):
+    await message.reply("🏥 Привет! Запишу тебя к врачу.\nКак твоё полное ФИО?")
+    await state.set_state(Reg.fio)
+
+@dp.message(Reg.fio)
+async def get_fio(message: types.Message, state: FSMContext):
+    await state.update_data(fio=message.text)
+    await message.reply("Выбери врача:\n1 — Терапевт\n2 — Хирург\n3 — Окулист")
+    await state.set_state(Reg.doctor)
+
+@dp.message(Reg.doctor)
+async def get_doctor(message: types.Message, state: FSMContext):
+    docs = {"1": "Терапевт", "2": "Хирург", "3": "Окулист"}
+    if message.text in docs:
+        await state.update_data(doctor=docs[message.text])
+        await message.reply("Введи дату (например: 2026-06-15)")
+        await state.set_state(Reg.date)
+    else:
+        await message.reply("Напиши 1, 2 или 3")
+
+@dp.message(Reg.date)
+async def get_date(message: types.Message, state: FSMContext):
+    await state.update_data(date=message.text)
+    await message.reply("Введи время (например: 14:30)")
+    await state.set_state(Reg.time)
+
+@dp.message(Reg.time)
+async def get_time(message: types.Message, state: FSMContext):
+    await state.update_data(time=message.text)
+    data = await state.get_data()
+    await message.reply(
+        f"✅ Запись оформлена!\n\n"
+        f"ФИО: {data['fio']}\n"
+        f"Врач: {data['doctor']}\n"
+        f"Дата: {data['date']}\n"
+        f"Время: {data['time']}\n\n"
+        f"Хорошего дня!"
+    )
+    await state.clear()
+
+async def main():
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+logging.basicConfig(level=logging.INFO)
+bot = Bot(token=API_TOKEN)
+storage = MemoryStorage()
+dp = Dispatcher(storage=storage)
+
+# Состояния для регистрации
+class Reg(StatesGroup):
+    fio = State()
+    doctor = State()
+    date = State()
+    time = State()
+
+@dp.message(Command("start"))
+async def start(message: types.Message, state: FSMContext):
+    await message.reply("🏥 Привет! Запишу тебя к врачу.\nКак твоё полное ФИО?")
+    await state.set_state(Reg.fio)
+
+@dp.message(Reg.fio)
+async def get_fio(message: types.Message, state: FSMContext):
+    await state.update_data(fio=message.text)
+    await message.reply("Выбери врача:\n1 — Терапевт\n2 — Хирург\n3 — Окулист")
+    await state.set_state(Reg.doctor)
+
+@dp.message(Reg.doctor)
+async def get_doctor(message: types.Message, state: FSMContext):
+    docs = {"1": "Терапевт", "2": "Хирург", "3": "Окулист"}
+    if message.text in docs:
+        await state.update_data(doctor=docs[message.text])
+        await message.reply("Введи дату (например: 2026-06-15)")
+        await state.set_state(Reg.date)
+    else:
+        await message.reply("Напиши 1, 2 или 3")
+
+@dp.message(Reg.date)
+async def get_date(message: types.Message, state: FSMContext):
+    await state.update_data(date=message.text)
+    await message.reply("Введи время (например: 14:30)")
+    await state.set_state(Reg.time)
+
+@dp.message(Reg.time)
+async def get_time(message: types.Message, state: FSMContext):
+    await state.update_data(time=message.text)
+    data = await state.get_data()
+    await message.reply(
+        f"✅ Запись оформлена!\n\n"
+        f"ФИО: {data['fio']}\n"
+        f"Врач: {data['doctor']}\n"
+        f"Дата: {data['date']}\n"
+        f"Время: {data['time']}\n\n"
+        f"Хорошего дня!"
+    )
+    await state.clear()
+
+async def main():
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())
