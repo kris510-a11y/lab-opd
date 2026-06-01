@@ -1,133 +1,70 @@
 import asyncio
-import logging
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
 
-import asyncio
-import logging
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters import Command
-from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State, StatesGroup
-from aiogram.fsm.storage.memory import MemoryStorage
+TOKEN = "8860946741:AAE4-VUMs-d_C2wXSv_7JufkSiC-nmDO87Q"
 
-API_TOKEN = "8819638324:AAGgf3-DvACTXP46_fQzSQ7eoAaAujHFDgk"
+bot = Bot(token=TOKEN)
+dp = Dispatcher(storage=MemoryStorage())
 
-logging.basicConfig(level=logging.INFO)
-bot = Bot(token=API_TOKEN)
-storage = MemoryStorage()
-dp = Dispatcher(storage=storage)
-
-# Состояния для регистрации
-class Reg(StatesGroup):
-    fio = State()
+class Form(StatesGroup):
+    name = State()
     doctor = State()
     date = State()
     time = State()
 
 @dp.message(Command("start"))
 async def start(message: types.Message, state: FSMContext):
-    await message.reply("🏥 Привет! Запишу тебя к врачу.\nКак твоё полное ФИО?")
-    await state.set_state(Reg.fio)
+    await message.answer("Здравствуйте! Для записи напишите свое ФИО.")
+    await state.set_state(Form.name)
 
-@dp.message(Reg.fio)
-async def get_fio(message: types.Message, state: FSMContext):
-    await state.update_data(fio=message.text)
-    await message.reply("Выбери врача:\n1 — Терапевт\n2 — Хирург\n3 — Окулист")
-    await state.set_state(Reg.doctor)
+@dp.message(Form.name)
+async def get_name(message: types.Message, state: FSMContext):
+    await state.update_data(name=message.text)
+    await message.answer("Выберите врача:\n1 - Терапевт\n2 - Хирург\n3 - Окулист")
+    await state.set_state(Form.doctor)
 
-@dp.message(Reg.doctor)
+@dp.message(Form.doctor)
 async def get_doctor(message: types.Message, state: FSMContext):
-    docs = {"1": "Терапевт", "2": "Хирург", "3": "Окулист"}
-    if message.text in docs:
-        await state.update_data(doctor=docs[message.text])
-        await message.reply("Введи дату (например: 2026-06-15)")
-        await state.set_state(Reg.date)
+    doctors = {"1": "Терапевт", "2": "Хирург", "3": "Окулист"}
+    if message.text in doctors:
+        await state.update_data(doctor=doctors[message.text])
+        await message.answer("Введите дату в формате ДД.ММ.ГГГГ\nНапример: 15.06.2026")
+        await state.set_state(Form.date)
     else:
-        await message.reply("Напиши 1, 2 или 3")
+        await message.answer("Напиши 1, 2 или 3")
 
-@dp.message(Reg.date)
+@dp.message(Form.date)
 async def get_date(message: types.Message, state: FSMContext):
-    await state.update_data(date=message.text)
-    await message.reply("Введи время (например: 14:30)")
-    await state.set_state(Reg.time)
-
-@dp.message(Reg.time)
-async def get_time(message: types.Message, state: FSMContext):
-    await state.update_data(time=message.text)
-    data = await state.get_data()
-    await message.reply(
-        f"✅ Запись оформлена!\n\n"
-        f"ФИО: {data['fio']}\n"
-        f"Врач: {data['doctor']}\n"
-        f"Дата: {data['date']}\n"
-        f"Время: {data['time']}\n\n"
-        f"Хорошего дня!"
-    )
-    await state.clear()
-
-async def main():
-    await dp.start_polling(bot)
-
-if __name__ == "__main__":
-    asyncio.run(main())
-
-logging.basicConfig(level=logging.INFO)
-bot = Bot(token=API_TOKEN)
-storage = MemoryStorage()
-dp = Dispatcher(storage=storage)
-
-# Состояния для регистрации
-class Reg(StatesGroup):
-    fio = State()
-    doctor = State()
-    date = State()
-    time = State()
-
-@dp.message(Command("start"))
-async def start(message: types.Message, state: FSMContext):
-    await message.reply("🏥 Привет! Запишу тебя к врачу.\nКак твоё полное ФИО?")
-    await state.set_state(Reg.fio)
-
-@dp.message(Reg.fio)
-async def get_fio(message: types.Message, state: FSMContext):
-    await state.update_data(fio=message.text)
-    await message.reply("Выбери врача:\n1 — Терапевт\n2 — Хирург\n3 — Окулист")
-    await state.set_state(Reg.doctor)
-
-@dp.message(Reg.doctor)
-async def get_doctor(message: types.Message, state: FSMContext):
-    docs = {"1": "Терапевт", "2": "Хирург", "3": "Окулист"}
-    if message.text in docs:
-        await state.update_data(doctor=docs[message.text])
-        await message.reply("Введи дату (например: 2026-06-15)")
-        await state.set_state(Reg.date)
+    date_text = message.text.strip()
+    if len(date_text) == 10 and date_text[2] == '.' and date_text[5] == '.':
+        await state.update_data(date=date_text)
+        await message.answer("Введите время (например: 14:30)")
+        await state.set_state(Form.time)
     else:
-        await message.reply("Напиши 1, 2 или 3")
+        await message.answer("Неверный формат! Введите дату как ДД.ММ.ГГГГ\nНапример: 15.06.2026")
 
-@dp.message(Reg.date)
-async def get_date(message: types.Message, state: FSMContext):
-    await state.update_data(date=message.text)
-    await message.reply("Введи время (например: 14:30)")
-    await state.set_state(Reg.time)
-
-@dp.message(Reg.time)
+@dp.message(Form.time)
 async def get_time(message: types.Message, state: FSMContext):
-    await state.update_data(time=message.text)
-    data = await state.get_data()
-    await message.reply(
-        f"✅ Запись оформлена!\n\n"
-        f"ФИО: {data['fio']}\n"
-        f"Врач: {data['doctor']}\n"
-        f"Дата: {data['date']}\n"
-        f"Время: {data['time']}\n\n"
-        f"Хорошего дня!"
-    )
-    await state.clear()
+    time_text = message.text.strip()
+    if len(time_text) == 5 and time_text[2] == ':':
+        await state.update_data(time=time_text)
+        data = await state.get_data()
+        await message.answer(
+            f"✅ Запись оформлена!\n\n"
+            f"Имя: {data['name']}\n"
+            f"Врач: {data['doctor']}\n"
+            f"Дата: {data['date']}\n"
+            f"Время: {data['time']}"
+        )
+        await state.clear()
+    else:
+        await message.answer("Неверный формат! Введите время как ЧЧ:ММ\nНапример: 14:30")
 
+print("Бот запускается")
 async def main():
     await dp.start_polling(bot)
 
