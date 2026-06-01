@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Личный кабинет</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #f0f0f0;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        a {
+            color: blue;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Добро пожаловать, {{ username }}!</h2>
+        <p>Вы успешно вошли в систему.</p>
+        <a href="/logout">Выйти</a>
+    </div>
+</body>
+</html>
